@@ -100,6 +100,10 @@
             box-sizing: border-box;
             font-size: 16px;
         }
+        .zakaznik-info input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
         .btn-odeslat {
             background-color: #2e7d32;
             color: white;
@@ -124,56 +128,6 @@
             border-radius: 8px;
             text-align: center;
         }
-
-        /* STYLY PRO POTVRZOVACÍ OKNO (MODAL) */
-        .modal-pozadi {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-obsah {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-        .modal-obsah h3 {
-            color: #2e7d32;
-            margin-top: 0;
-        }
-        .modal-obsah textarea {
-            width: 100%;
-            height: 150px;
-            margin: 15px 0;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-family: monospace;
-            background: #f9f9f9;
-            resize: none;
-        }
-        .modal-tlacitka {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .btn-modal {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-zavrit { background: #ccc; color: #333; }
-        .btn-kopirovat { background: #2e7d32; color: white; }
     </style>
 </head>
 <body>
@@ -206,8 +160,8 @@
     <div class="zakaznik-info">
         <h3>Údaje pro doručení</h3>
         
-        <label for="jmeno">JMÉNO A PŘÍJMENÍ (ve formátu Příjmení Jméno):</label>
-        <input type="text" id="jmeno" placeholder="Např. Novák Jan" required>
+        <label for="jmeno">JMÉNO A PŘÍJMENÍ:</label>
+        <input type="text" id="jmeno" placeholder="Např. Jan Novák" required>
 
         <label for="telefon">TELEFONNÍ ČÍSLO:</label>
         <input type="tel" id="telefon" value="+420 " placeholder="+420 000 000 000" required>
@@ -215,20 +169,8 @@
         <label for="email">E-MAILOVÁ ADRESA:</label>
         <input type="email" id="email" placeholder="jan.novak@email.cz" required>
     </div>
-    <button class="btn-odeslat" onclick="odeslatObjednavku()">ODESLAT OBJEDNÁVKU</button>
 
-    <div class="modal-pozadi" id="potvrzeni-modal">
-        <div class="modal-obsah">
-            <h3>Objednávka byla vygenerována! 🚀</h3>
-            <p>Aplikace se nyní pokouší otevřít váš e-mailový program s předvyplněnými údaji.</p>
-            <p style="font-size: 13px; color: #666;"> Pokud se nic nestalo, nemáte v systému nastavený výchozí e-mailový program. Text si můžete zkopírovat níže:</p>
-            <textarea id="modal-text-emailu" readonly></textarea>
-            <div class="modal-tlacitka">
-                <button class="btn-modal btn-zavrit" onclick="zavriModal()">Zavřít</button>
-                <button class="btn-modal btn-kopirovat" onclick="kopirujText()">Kopírovat text</button>
-            </div>
-        </div>
-    </div>
+    <button class="btn-odeslat" onclick="odeslatObjednavku()">ODESLAT OBJEDNÁVKU</button>
 
     <script>
         let produktyData = [];
@@ -270,8 +212,8 @@
             } catch (error) {
                 document.getElementById('produkty-kontejner').innerHTML = `
                     <div class="chyba-nacitani">
-                        <strong>Chyba při načítání CSV:</strong> Produkty se nepodařilo načíst.<br>
-                        <small>Upozornění: Načítání z CSV funguje až po nahrání na GitHub (přes GitHub Pages). Lokálně z plochy prohlížeč soubory blokuje.</small>
+                        <strong>Chyba:</strong> Produkty se nepodařilo načíst z CSV souboru.<br>
+                        <em>Poznámka: Načítání souborů přes fetch() funguje pouze na webovém serveru (např. GitHub Pages). Pokud index.html otevíráte pouze lokálně z plochy, prohlížeč z bezpečnostních důvodů CSV nenačte.</em>
                     </div>`;
                 console.error(error);
             }
@@ -283,6 +225,7 @@
             
             produktyData[index].kusy = noveKusy;
             document.getElementById(`kusy_${index}`).innerText = noveKusy;
+            
             aktualizujSouhrn();
         }
 
@@ -301,7 +244,7 @@
             `;
         }
 
-        // --- ZAČÁTEK: FUNKCE MAILTO A ODESLÁNÍ ---
+        // OPRAVENÁ FUNKCE PRO SPOLEHLIVÉ ODESLÁNÍ
         function odeslatObjednavku() {
             const jmeno = document.getElementById('jmeno').value.trim();
             const telefon = document.getElementById('telefon').value.trim();
@@ -330,6 +273,7 @@
                 return;
             }
 
+            // Sestavení přehledného těla e-mailu dle požadavků
             let textEmailu = `Dobrý den,\n\nzasílám novou objednávku z aplikace FitLife Fresh Bar.\n\n`;
             textEmailu += `--------------------------------------\n`;
             textEmailu += `ÚDAJE ZÁKAZNÍKA:\n`;
@@ -337,9 +281,9 @@
             textEmailu += `Telefon: ${telefon}\n`;
             textEmailu += `E-mail: ${email}\n`;
             textEmailu += `--------------------------------------\n\n`;
-            textEmailu += `OBJEDNANÉ ZBOŽÍ:\n${seznamText}\n`;
+            textEmailu += `OBJEDNANÉ ZBOŽÍ A CENY:\n${seznamText}\n`;
             textEmailu += `--------------------------------------\n`;
-            textEmailu += `Celkový počet objednaných kusů: ${celkemKusu} ks\n`;
+            textEmailu += `CELKOVÝ POČET KUSŮ: ${celkemKusu} ks\n`;
             textEmailu += `CELKOVÁ CENA K ÚHRADĚ: ${celkovaCena} Kč\n`;
 
             const cilovyEmail = "app@kostka-skola.cz";
@@ -347,26 +291,16 @@
             
             const mailtoOdkaz = `mailto:${cilovyEmail}?subject=${encodeURIComponent(predmetEmailu)}&body=${encodeURIComponent(textEmailu)}`;
             
-            // 1. Zobrazení vizuálního záložního okna na webu
-            document.getElementById('modal-text-emailu').value = textEmailu;
-            document.getElementById('potvrzeni-modal').style.display = 'flex';
+            // Informační okno pro kontrolu funkčnosti
+            alert("Spouštím e-mailového klienta pro adresu app@kostka-skola.cz.\nCelková cena: " + celkovaCena + " Kč\nPočet kusů: " + celkemKusu + " ks.");
 
-            // 2. Aktivace odeslání přes Mailto (bezpečnější metoda přes skrytý odkaz)
+            // Vytvoření dynamického odkazu na pozadí a jeho prokliknutí (nejstabilnější metoda)
             const skrytyOdkaz = document.createElement('a');
             skrytyOdkaz.href = mailtoOdkaz;
+            skrytyOdkaz.style.display = 'none';
+            document.body.appendChild(skrytyOdkaz);
             skrytyOdkaz.click();
-        }
-        // --- KONEC: FUNKCE MAILTO A ODESLÁNÍ ---
-
-        function zavriModal() {
-            document.getElementById('potvrzeni-modal').style.display = 'none';
-        }
-
-        function kopirujText() {
-            const textarea = document.getElementById('modal-text-emailu');
-            textarea.select();
-            document.execCommand('copy');
-            alert('Text objednávky byl zkopírován do schránky!');
+            document.body.removeChild(skrytyOdkaz);
         }
 
         nactiProdukty();
