@@ -100,10 +100,6 @@
             box-sizing: border-box;
             font-size: 16px;
         }
-        .zakaznik-info input:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
         .btn-odeslat {
             background-color: #2e7d32;
             color: white;
@@ -128,6 +124,56 @@
             border-radius: 8px;
             text-align: center;
         }
+
+        /* STYLY PRO POTVRZOVACÍ OKNO (MODAL) */
+        .modal-pozadi {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-obsah {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .modal-obsah h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        .modal-obsah textarea {
+            width: 100%;
+            height: 150px;
+            margin: 15px 0;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: monospace;
+            background: #f9f9f9;
+            resize: none;
+        }
+        .modal-tlacitka {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-zavrit { background: #ccc; color: #333; }
+        .btn-kopirovat { background: #2e7d32; color: white; }
     </style>
 </head>
 <body>
@@ -160,8 +206,8 @@
     <div class="zakaznik-info">
         <h3>Údaje pro doručení</h3>
         
-        <label for="jmeno">JMÉNO A PŘÍJMENÍ:</label>
-        <input type="text" id="jmeno" placeholder="Např. Jan Novák" required>
+        <label for="jmeno">JMÉNO A PŘÍJMENÍ (ve formátu Příjmení Jméno):</label>
+        <input type="text" id="jmeno" placeholder="Např. Novák Jan" required>
 
         <label for="telefon">TELEFONNÍ ČÍSLO:</label>
         <input type="tel" id="telefon" value="+420 " placeholder="+420 000 000 000" required>
@@ -169,8 +215,20 @@
         <label for="email">E-MAILOVÁ ADRESA:</label>
         <input type="email" id="email" placeholder="jan.novak@email.cz" required>
     </div>
-
     <button class="btn-odeslat" onclick="odeslatObjednavku()">ODESLAT OBJEDNÁVKU</button>
+
+    <div class="modal-pozadi" id="potvrzeni-modal">
+        <div class="modal-obsah">
+            <h3>Objednávka byla vygenerována! 🚀</h3>
+            <p>Aplikace se nyní pokouší otevřít váš e-mailový program s předvyplněnými údaji.</p>
+            <p style="font-size: 13px; color: #666;"> Pokud se nic nestalo, nemáte v systému nastavený výchozí e-mailový program. Text si můžete zkopírovat níže:</p>
+            <textarea id="modal-text-emailu" readonly></textarea>
+            <div class="modal-tlacitka">
+                <button class="btn-modal btn-zavrit" onclick="zavriModal()">Zavřít</button>
+                <button class="btn-modal btn-kopirovat" onclick="kopirujText()">Kopírovat text</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let produktyData = [];
@@ -178,16 +236,13 @@
         // FUNKCE: Načtení dat ze souboru produkty.csv
         async function nactiProdukty() {
             try {
-                // Stažení obsahu CSV
                 const response = await fetch('produkty.csv');
                 if (!response.ok) throw new Error('Nelze načíst soubor produkty.csv');
                 const data = await response.text();
                 
-                // Rozdělení podle řádků
                 const radky = data.split('\n');
                 const kontejner = document.getElementById('produkty-kontejner');
                 
-                // Přeskakujeme první řádek (0), protože obsahuje hlavičku: Název, Cena
                 for (let i = 1; i < radky.length; i++) {
                     const radek = radky[i].trim();
                     if (radek) {
@@ -196,7 +251,6 @@
                         
                         const index = produktyData.length - 1;
                         
-                        // Vytvoření HTML pro konkrétní produkt
                         const div = document.createElement('div');
                         div.className = 'produkt';
                         div.innerHTML = `
@@ -214,29 +268,24 @@
                     }
                 }
             } catch (error) {
-                // Upozornění, pokud se CSV nenačte
                 document.getElementById('produkty-kontejner').innerHTML = `
                     <div class="chyba-nacitani">
-                        <strong>Chyba:</strong> Produkty se nepodařilo načíst z CSV souboru.<br>
-                        <em>Poznámka: Načítání souborů přes fetch() funguje pouze na webovém serveru (např. GitHub Pages). Pokud index.html otevíráte pouze lokálně z plochy, prohlížeč z bezpečnostních důvodů CSV nenačte.</em>
+                        <strong>Chyba při načítání CSV:</strong> Produkty se nepodařilo načíst.<br>
+                        <small>Upozornění: Načítání z CSV funguje až po nahrání na GitHub (přes GitHub Pages). Lokálně z plochy prohlížeč soubory blokuje.</small>
                     </div>`;
                 console.error(error);
             }
         }
 
-        // FUNKCE: Přidávání / odebírání kusů zboží
         function zmenKusy(index, zmena) {
             let noveKusy = produktyData[index].kusy + zmena;
-            if (noveKusy < 0) noveKusy = 0; // Kusy nesmí jít do mínusu
+            if (noveKusy < 0) noveKusy = 0;
             
             produktyData[index].kusy = noveKusy;
             document.getElementById(`kusy_${index}`).innerText = noveKusy;
-            
-            // Po každé změně přepočítáme souhrn
             aktualizujSouhrn();
         }
 
-        // FUNKCE: Přepočítání celkové ceny a počtu kusů
         function aktualizujSouhrn() {
             let celkemKusu = 0;
             let celkovaCena = 0;
@@ -252,13 +301,12 @@
             `;
         }
 
-        // FUNKCE: Kontrola a odeslání objednávky (Mailto)
+        // --- ZAČÁTEK: FUNKCE MAILTO A ODESLÁNÍ ---
         function odeslatObjednavku() {
             const jmeno = document.getElementById('jmeno').value.trim();
             const telefon = document.getElementById('telefon').value.trim();
             const email = document.getElementById('email').value.trim();
 
-            // 1. Validace výplňových polí zákazníka
             if (jmeno === "" || telefon === "" || telefon === "+420" || email === "") {
                 alert("Prosím vyplňte Jméno a příjmení, Telefonní číslo a E-mailovou adresu.");
                 return;
@@ -268,7 +316,6 @@
             let celkovaCena = 0;
             let seznamText = "";
 
-            // 2. Sestavení objednaných položek do textu
             produktyData.forEach(p => {
                 if (p.kusy > 0) {
                     celkemKusu += p.kusy;
@@ -278,13 +325,11 @@
                 }
             });
 
-            // Kontrola, zda zákazník vůbec něco vybral
             if (celkemKusu === 0) {
                 alert("Vaše objednávka je prázdná. Přidejte prosím do košíku nějaké produkty.");
                 return;
             }
 
-            // 3. Sestavení strukturovaného těla e-mailu
             let textEmailu = `Dobrý den,\n\nzasílám novou objednávku z aplikace FitLife Fresh Bar.\n\n`;
             textEmailu += `--------------------------------------\n`;
             textEmailu += `ÚDAJE ZÁKAZNÍKA:\n`;
@@ -297,18 +342,33 @@
             textEmailu += `Celkový počet objednaných kusů: ${celkemKusu} ks\n`;
             textEmailu += `CELKOVÁ CENA K ÚHRADĚ: ${celkovaCena} Kč\n`;
 
-            // 4. Vygenerování odkazu Mailto s novou adresou
             const cilovyEmail = "app@kostka-skola.cz";
             const predmetEmailu = "Nová objednávka FitLife - " + jmeno;
             
-            // encodeURIComponent převede mezery a odřádkování na správný formát pro URL
             const mailtoOdkaz = `mailto:${cilovyEmail}?subject=${encodeURIComponent(predmetEmailu)}&body=${encodeURIComponent(textEmailu)}`;
             
-            // Otevření klienta
-            window.location.href = mailtoOdkaz;
+            // 1. Zobrazení vizuálního záložního okna na webu
+            document.getElementById('modal-text-emailu').value = textEmailu;
+            document.getElementById('potvrzeni-modal').style.display = 'flex';
+
+            // 2. Aktivace odeslání přes Mailto (bezpečnější metoda přes skrytý odkaz)
+            const skrytyOdkaz = document.createElement('a');
+            skrytyOdkaz.href = mailtoOdkaz;
+            skrytyOdkaz.click();
+        }
+        // --- KONEC: FUNKCE MAILTO A ODESLÁNÍ ---
+
+        function zavriModal() {
+            document.getElementById('potvrzeni-modal').style.display = 'none';
         }
 
-        // Spuštění načítání dat po startu aplikace
+        function kopirujText() {
+            const textarea = document.getElementById('modal-text-emailu');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Text objednávky byl zkopírován do schránky!');
+        }
+
         nactiProdukty();
     </script>
 
