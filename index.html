@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife Fresh Bar - Objednávka</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7fcf7;
+            color: #2e3d2e;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .hlavicka {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .hlavicka svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #2e7d32;
+            margin: 0;
+            font-size: 28px;
+        }
+        p.podtitul {
+            color: #666;
+            font-style: italic;
+        }
+        .produkt {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #81c784;
+        }
+        .ovladani-kusu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .ovladani-kusu button {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .ovladani-kusu button:hover {
+            background-color: #c8e6c9;
+        }
+        .ovladani-kusu span {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+        .souhrn {
+            background-color: #e8f5e9;
+            border: 2px dashed #81c784;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 25px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        .zakaznik-info {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-top: 5px solid #2e7d32;
+        }
+        .zakaznik-info label {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #2e7d32;
+        }
+        .zakaznik-info input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .zakaznik-info input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .btn-odeslat {
+            background-color: #2e7d32;
+            color: white;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+        .btn-odeslat:hover {
+            background-color: #1b5e20;
+        }
+        .chyba-nacitani {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hlavicka">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#81c784;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#2e7d32;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="48" fill="url(#grad)" stroke="#1b5e20" stroke-width="2" />
+            <path d="M50 25 Q 30 25 30 50 Q 30 75 50 85 Q 70 75 70 50 Q 70 25 50 25 Z" fill="#e8f5e9" />
+            <path d="M50 25 L 50 85" stroke="#2e7d32" stroke-width="3" />
+            <path d="M50 50 Q 60 40 70 50" stroke="#2e7d32" stroke-width="2" fill="none" />
+            <path d="M50 65 Q 40 55 30 65" stroke="#2e7d32" stroke-width="2" fill="none" />
+        </svg>
+        <h1>FitLife Fresh Bar</h1>
+        <p class="podtitul">Příroda a zdraví v každém soustu</p>
+    </div>
+
+    <div id="produkty-kontejner"></div>
+
+    <div class="souhrn" id="souhrn-text">
+        <strong>Celkem položek:</strong> 0 ks<br>
+        <strong>Celková cena:</strong> 0 Kč
+    </div>
+
+    <div class="zakaznik-info">
+        <h3>Údaje pro doručení</h3>
+        
+        <label for="jmeno">JMÉNO A PŘÍJMENÍ:</label>
+        <input type="text" id="jmeno" placeholder="Např. Jan Novák" required>
+
+        <label for="telefon">TELEFONNÍ ČÍSLO:</label>
+        <input type="tel" id="telefon" value="+420 " placeholder="+420 000 000 000" required>
+
+        <label for="email">E-MAILOVÁ ADRESA:</label>
+        <input type="email" id="email" placeholder="jan.novak@email.cz" required>
+    </div>
+
+    <button class="btn-odeslat" onclick="odeslatObjednavku()">ODESLAT OBJEDNÁVKU</button>
+
+    <script>
+        let produktyData = [];
+
+        // FUNKCE: Načtení dat ze souboru produkty.csv
+        async function nactiProdukty() {
+            try {
+                // Stažení obsahu CSV
+                const response = await fetch('produkty.csv');
+                if (!response.ok) throw new Error('Nelze načíst soubor produkty.csv');
+                const data = await response.text();
+                
+                // Rozdělení podle řádků
+                const radky = data.split('\n');
+                const kontejner = document.getElementById('produkty-kontejner');
+                
+                // Přeskakujeme první řádek (0), protože obsahuje hlavičku: Název, Cena
+                for (let i = 1; i < radky.length; i++) {
+                    const radek = radky[i].trim();
+                    if (radek) {
+                        const [nazev, cena] = radek.split(',');
+                        produktyData.push({ nazev: nazev, cena: parseInt(cena), kusy: 0 });
+                        
+                        const index = produktyData.length - 1;
+                        
+                        // Vytvoření HTML pro konkrétní produkt
+                        const div = document.createElement('div');
+                        div.className = 'produkt';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${nazev}</strong><br>
+                                Cena: ${cena} Kč
+                            </div>
+                            <div class="ovladani-kusu">
+                                <button onclick="zmenKusy(${index}, -1)">-</button>
+                                <span id="kusy_${index}">0</span>
+                                <button onclick="zmenKusy(${index}, 1)">+</button>
+                            </div>
+                        `;
+                        kontejner.appendChild(div);
+                    }
+                }
+            } catch (error) {
+                // Upozornění, pokud se CSV nenačte
+                document.getElementById('produkty-kontejner').innerHTML = `
+                    <div class="chyba-nacitani">
+                        <strong>Chyba:</strong> Produkty se nepodařilo načíst z CSV souboru.<br>
+                        <em>Poznámka: Načítání souborů přes fetch() funguje pouze na webovém serveru (např. GitHub Pages). Pokud index.html otevíráte pouze lokálně z plochy, prohlížeč z bezpečnostních důvodů CSV nenačte.</em>
+                    </div>`;
+                console.error(error);
+            }
+        }
+
+        // FUNKCE: Přidávání / odebírání kusů zboží
+        function zmenKusy(index, zmena) {
+            let noveKusy = produktyData[index].kusy + zmena;
+            if (noveKusy < 0) noveKusy = 0; // Kusy nesmí jít do mínusu
+            
+            produktyData[index].kusy = noveKusy;
+            document.getElementById(`kusy_${index}`).innerText = noveKusy;
+            
+            // Po každé změně přepočítáme souhrn
+            aktualizujSouhrn();
+        }
+
+        // FUNKCE: Přepočítání celkové ceny a počtu kusů
+        function aktualizujSouhrn() {
+            let celkemKusu = 0;
+            let celkovaCena = 0;
+            
+            produktyData.forEach(p => {
+                celkemKusu += p.kusy;
+                celkovaCena += (p.kusy * p.cena);
+            });
+
+            document.getElementById('souhrn-text').innerHTML = `
+                <strong>Celkem položek:</strong> ${celkemKusu} ks<br>
+                <strong>Celková cena:</strong> ${celkovaCena} Kč
+            `;
+        }
+
+        // FUNKCE: Kontrola a odeslání objednávky (Mailto)
+        function odeslatObjednavku() {
+            const jmeno = document.getElementById('jmeno').value.trim();
+            const telefon = document.getElementById('telefon').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            // 1. Validace výplňových polí zákazníka
+            if (jmeno === "" || telefon === "" || telefon === "+420" || email === "") {
+                alert("Prosím vyplňte Jméno a příjmení, Telefonní číslo a E-mailovou adresu.");
+                return;
+            }
+
+            let celkemKusu = 0;
+            let celkovaCena = 0;
+            let seznamText = "";
+
+            // 2. Sestavení objednaných položek do textu
+            produktyData.forEach(p => {
+                if (p.kusy > 0) {
+                    celkemKusu += p.kusy;
+                    let cenaPolozky = p.kusy * p.cena;
+                    celkovaCena += cenaPolozky;
+                    seznamText += `- ${p.nazev}: ${p.kusy} ks (Cena: ${cenaPolozky} Kč)\n`;
+                }
+            });
+
+            // Kontrola, zda zákazník vůbec něco vybral
+            if (celkemKusu === 0) {
+                alert("Vaše objednávka je prázdná. Přidejte prosím do košíku nějaké produkty.");
+                return;
+            }
+
+            // 3. Sestavení strukturovaného těla e-mailu
+            let textEmailu = `Dobrý den,\n\nzasílám novou objednávku z aplikace FitLife Fresh Bar.\n\n`;
+            textEmailu += `--------------------------------------\n`;
+            textEmailu += `ÚDAJE ZÁKAZNÍKA:\n`;
+            textEmailu += `Jméno a příjmení: ${jmeno}\n`;
+            textEmailu += `Telefon: ${telefon}\n`;
+            textEmailu += `E-mail: ${email}\n`;
+            textEmailu += `--------------------------------------\n\n`;
+            textEmailu += `OBJEDNANÉ ZBOŽÍ:\n${seznamText}\n`;
+            textEmailu += `--------------------------------------\n`;
+            textEmailu += `Celkový počet objednaných kusů: ${celkemKusu} ks\n`;
+            textEmailu += `CELKOVÁ CENA K ÚHRADĚ: ${celkovaCena} Kč\n`;
+
+            // 4. Vygenerování odkazu Mailto s novou adresou
+            const cilovyEmail = "app@kostka-skola.cz";
+            const predmetEmailu = "Nová objednávka FitLife - " + jmeno;
+            
+            // encodeURIComponent převede mezery a odřádkování na správný formát pro URL
+            const mailtoOdkaz = `mailto:${cilovyEmail}?subject=${encodeURIComponent(predmetEmailu)}&body=${encodeURIComponent(textEmailu)}`;
+            
+            // Otevření klienta
+            window.location.href = mailtoOdkaz;
+        }
+
+        // Spuštění načítání dat po startu aplikace
+        nactiProdukty();
+    </script>
+
+</body>
+</html>
