@@ -244,7 +244,7 @@
             `;
         }
 
-        // OPRAVENÁ FUNKCE PRO SPOLEHLIVÉ ODESLÁNÍ
+        // ČISTÁ FUNKCE PRO PŘÍMÉ OTEVŘENÍ EMAILU
         function odeslatObjednavku() {
             const jmeno = document.getElementById('jmeno').value.trim();
             const telefon = document.getElementById('telefon').value.trim();
@@ -273,7 +273,7 @@
                 return;
             }
 
-            // Sestavení přehledného těla e-mailu dle požadavků
+            // Sestavení textu e-mailu se všemi náležitostmi (produkty, kusy, ceny, celková cena)
             let textEmailu = `Dobrý den,\n\nzasílám novou objednávku z aplikace FitLife Fresh Bar.\n\n`;
             textEmailu += `--------------------------------------\n`;
             textEmailu += `ÚDAJE ZÁKAZNÍKA:\n`;
@@ -291,16 +291,8 @@
             
             const mailtoOdkaz = `mailto:${cilovyEmail}?subject=${encodeURIComponent(predmetEmailu)}&body=${encodeURIComponent(textEmailu)}`;
             
-            // Informační okno pro kontrolu funkčnosti
-            alert("Spouštím e-mailového klienta pro adresu app@kostka-skola.cz.\nCelková cena: " + celkovaCena + " Kč\nPočet kusů: " + celkemKusu + " ks.");
-
-            // Vytvoření dynamického odkazu na pozadí a jeho prokliknutí (nejstabilnější metoda)
-            const skrytyOdkaz = document.createElement('a');
-            skrytyOdkaz.href = mailtoOdkaz;
-            skrytyOdkaz.style.display = 'none';
-            document.body.appendChild(skrytyOdkaz);
-            skrytyOdkaz.click();
-            document.body.removeChild(skrytyOdkaz);
+            // Přímé přesměrování na poštovní program (bez varovných hlášek)
+            window.location.href = mailtoOdkaz;
         }
 
         nactiProdukty();
